@@ -8,10 +8,10 @@ import openai
 
 # Member Variables:
 if 1:
-    OPEN_AI_API_KEY = ''
-    PINECONE_API_KEY = ''
-    INDEX_NAME = ''
-    ENVIRONMENT = ''
+   #  OPEN_AI_API_KEY = ''
+   #  PINECONE_API_KEY = ''
+   # INDEX_NAME = ''
+   # ENVIRONMENT = ''
 
 # Initialize Pinecone
 pc = Pinecone(api_key=PINECONE_API_KEY)
