@@ -8,7 +8,7 @@ import openai
 
 # Member Variables:
 if 1:
-   #  OPEN_AI_API_KEY = ''
+   #  
    #  PINECONE_API_KEY = ''
    # INDEX_NAME = ''
    # ENVIRONMENT = ''
