@@ -12,4 +12,4 @@ Scrapy Crawler Video: https://www.youtube.com/watch?v=m_3gjHGxIJc
 
 IBM Video: https://www.youtube.com/watch?v=XctooiH0moI
 
-Met w/ Justin. May reduce scope to general occidental info on the school. To say how I can do this, I will need to scrape the website and see how much data I have to work with. So for now work on building the webscraper. Downloaded Mistral 7B today. Should ask how I should justify picking it.~
+Met w/ Justin. May reduce scope to general occidental info on the school. To say how I can do this, I will need to scrape the website and see how much data I have to work with. So for now work on building the webscraper. Downloaded Mistral 7B today. Should ask how I should justify picking it.
