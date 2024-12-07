@@ -9,9 +9,16 @@ class tScrape(scrapy.Spider):
     name = 'oxy'
 
     # Define the allowed domains
-    allowed_domains = ["oxy.edu", 'oxyathletics.com']
-
+    allowed_domains = ['oxyathletics.com', 'oxy.edu']
+    banned_domains = ["onlinelibrary.wiley.com"]
     # 'theoccidentalnews.com' [To be scraped later]
+
+    # Custom settings for timeouts and retries
+    custom_settings = {
+        'DOWNLOAD_TIMEOUT': 10,  # Set to 10 seconds
+        'RETRY_TIMES': 1,        # Retry only once
+        'RETRY_HTTP_CODES': [500, 502, 503, 504, 522, 524, 408],  # Handle timeout-related codes
+    }
 
     def __init__(self):
         super().__init__()
@@ -23,7 +30,7 @@ class tScrape(scrapy.Spider):
         with open(self.scraped_urls_file, 'r') as f:
             self.scraped_urls = set(f.read().splitlines())
         # Create a folder to store the scraped files
-        self.target_folder = 'web_data'
+        self.target_folder = 'web_data_4'
         if not Path(self.target_folder).exists():
             Path(self.target_folder).mkdir()
 
@@ -59,9 +66,9 @@ class tScrape(scrapy.Spider):
         for script in soup(["script", "style", "nav", "noscript", "header", "footer"]):
             script.extract()
         
-        # Work to make paragraphs
+        # Work t make paragraphs
         paragraphs = []
-        for element in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'tr', 'td']):
+        for element in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'tr', 'td', 'ul']):
             text = element.get_text(separator=' ', strip=True) 
             if text: 
                 paragraphs.append(text)   
@@ -97,8 +104,9 @@ class tScrape(scrapy.Spider):
         domain = urlparse(response.url).netloc
 
         #plain_text = ' '.join(plain_text).strip()
-        page = response.url.split("/")[-2]
-        filename = f'{domain}-{page}.txt'
+        path = urlparse(response.url).path.strip('/')
+        path = path.replace('/', '_')
+        filename = f'{path}.txt'
         file_path = os.path.join(self.target_folder, filename)
 
         try:
@@ -130,7 +138,9 @@ class tScrape(scrapy.Spider):
             # Handle relative links by generating full URLs
             if link and link.startswith('/'):
                 link = response.urljoin(link)
-            
+            if any(banned in domain for banned in self.banned_domains):
+                self.log(f"Skipping banned domain: {domain}")
+                continue
             # Check if link is in the allowed domains and hasn't been scraped yet
             if any(domain in link for domain in self.allowed_domains) and link not in self.scraped_urls:
                 yield scrapy.Request(url=link, callback=self.parse)
@@ -140,24 +150,7 @@ class tScrape(scrapy.Spider):
             parsed_url = urlparse(url)
             stripped_url = urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path, '', '', ''))
             return stripped_url
-
-        '''# Save each link to the links.txt file
-        with open('links.txt', 'w') as f:
-            f.write(link + '\n')
-            # Follow the link
-            yield scrapy.Request(url=link, callback=self.parse)'''
     
-
-        '''# Extract Links
-        links = response.xpath('//a/@href').getall() # Extracts all links on the page
-        for link in links:
-            # If the link starts with a '/', join it with the base URL
-            if link and link.startswith('/'):
-                link = response.urljoin(link)
-                self.log(f"Found link: {link}")
-            # Writes each link into a file
-            with open('links.txt', 'w') as f:
-                f.write(f'{link}\n')
-            # Follows the link
-            yield scrapy.Request(link, callback=self.parse)
-            '''
+        def handle_error(self, failure):
+            # Log and ignore requests that encounter issues like timeouts
+            self.log(f"Error on {failure.request.url}: {failure.value}")
